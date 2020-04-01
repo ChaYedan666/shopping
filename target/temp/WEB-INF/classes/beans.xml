@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans>
+    <!--CategoryDao  决定使用 CategoryDaoMysql 实现类-->
+<!--    <bean name="CategoryDao" class="org.project01.dao.CategoryDao"></bean>-->
+
+    <bean name="CategoryService" class="org.project01.service.impl.CategoryServiceImpl"></bean>
+
+    <bean name="OrderDao" class="org.project01.dao.impl.OrderDaoImpl"></bean>
+
+    <bean name="OrderService" class="org.project01.service.impl.OrderServiceImpl"></bean>
+
+</beans>
