@@ -3,6 +3,7 @@ package org.project01.dao;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.project01.domain.Category;
 import org.project01.utils.DataSourceUtil;
 
@@ -43,5 +44,57 @@ public class CategoryDao {
 
         return query;
     }
+
+    public void save(Category category) {
+        QueryRunner queryRunner = new QueryRunner(DataSourceUtil.getDataSource());
+
+        String sql = "INSERT INTO CATEGORY VALUES(?,?)";
+
+        try {
+            int update = queryRunner.update(sql, category.getCid(), category.getCname());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void update(Category category) {
+        QueryRunner queryRunner = new QueryRunner(DataSourceUtil.getDataSource());
+
+        String sql = "UPDATE CATEGORY SET CNAME = ? WHERE CID = ?";
+
+        try {
+            queryRunner.update(sql,category.getCname(),category.getCid());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void del(String cid) {
+        QueryRunner queryRunner = new QueryRunner(DataSourceUtil.getDataSource());
+
+        String sql = "DELETE FROM CATEGORY WHERE CID = ?";
+
+        try {
+            queryRunner.update(sql,cid);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public int countByCId(String cid) {
+        QueryRunner qr = new QueryRunner(DataSourceUtil.getDataSource());
+
+        //编写sql
+        String sql="SELECT COUNT(*) FROM PRODUCT WHERE CID=?";
+
+        try {
+            return ((Long)qr.query(sql,new ScalarHandler(),cid)).intValue();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 }

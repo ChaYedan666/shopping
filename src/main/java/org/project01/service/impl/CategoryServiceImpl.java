@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.project01.dao.CategoryDao;
 import org.project01.domain.Category;
+import org.project01.exceptions.CategoryHasProductException;
 import org.project01.service.CategoryService;
 import org.project01.utils.RedisUtil;
 import redis.clients.jedis.Jedis;
@@ -57,4 +58,58 @@ public class CategoryServiceImpl implements CategoryService {
         return byId;
     }
 
+    public void save(Category category) {
+        CategoryDao categoryDao = new CategoryDao();
+
+        categoryDao.save(category);
+
+        // 刷新数据库
+        refresh();
+    }
+
+    private void refresh() {
+        // 连接redis
+        Jedis connection = RedisUtil.getConnection();
+        try {
+            // 查询到更新后的数据将原来的数据进行刷新
+            List<Category> all = new CategoryDao().findAll();
+            String s = new ObjectMapper().writeValueAsString(all);
+            connection.set("categories",s);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }finally {
+            if (connection != null){
+                connection.close();
+            }
+        }
+
+
+    }
+
+    public void update(Category category) {
+        // 目录名修改操作，操作完成后也要刷新
+
+        CategoryDao categoryDao = new CategoryDao();
+        categoryDao.update(category);
+        // 刷新
+        refresh();
+    }
+
+    public void del(String cid) throws CategoryHasProductException {
+        // 目录名删除操作，关键在于，跟其他表相连的外键能不能删除，只要其他表中还有一个数据，那么这个目录就不能删除
+        // 查询此目录的商品数
+        CategoryDao categoryDao = new CategoryDao();
+        int count = categoryDao.countByCId(cid);
+        if (count > 0){
+            throw new CategoryHasProductException();
+
+        }else {
+            categoryDao.del(cid);
+            refresh();
+        }
+
+
+
+
+    }
 }
