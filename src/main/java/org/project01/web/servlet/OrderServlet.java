@@ -22,6 +22,11 @@ public class OrderServlet extends BaseServlet {
     // 工厂方法，将接口的方法反射到实现类
     private OrderService orderService = BeanFactory.newInstance(OrderService.class);
 
+    // 还有回调的方法（callback）没写，教程没有我服了
+
+
+    //这里留空等以后有机会补吧
+
     protected void toPay(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // 获取oid,收货人姓名，地址，电话
         Map<String, String[]> parameterMap = request.getParameterMap();
