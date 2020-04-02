@@ -1,12 +1,11 @@
 package org.project01.web.servlet;
 
+import com.alipay.api.AlipayApiException;
 import org.apache.commons.beanutils.BeanUtils;
 import org.project01.constants.Global;
 import org.project01.domain.*;
 import org.project01.service.OrderService;
-import org.project01.utils.BeanFactory;
-import org.project01.utils.RRHolder;
-import org.project01.utils.UUIDUtil;
+import org.project01.utils.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -15,14 +14,36 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 @WebServlet(urlPatterns = "/order")
 public class OrderServlet extends BaseServlet {
     // 工厂方法，将接口的方法反射到实现类
     private OrderService orderService = BeanFactory.newInstance(OrderService.class);
+
+    protected void toPay(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // 获取oid,收货人姓名，地址，电话
+        Map<String, String[]> parameterMap = request.getParameterMap();
+        Order order = new Order();
+        try {
+            BeanUtils.populate(order,parameterMap);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 调用service里面的方法，进行数据库更新
+        orderService.updateSHR(order);
+        // 接入支付宝
+        try {
+            String s = AlipayUtil.generateAlipayTradePagePayRequestForm(order.getOid(), "测试购买的商品", 0.01);
+            response.getWriter().print(s);
+        } catch (AlipayApiException e) {
+            e.printStackTrace();
+        }
+
+
+    }
 
     protected void generate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // 检查是否登录
@@ -64,11 +85,51 @@ public class OrderServlet extends BaseServlet {
         // 调用service方法
         orderService.save(order,orderItems);
 
+        success(oid);
 
+    }
 
+    protected void info(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // 获取oid
+        String oid = request.getParameter("oid");
+        // 通过oid查询订单详情和订单项详情
+        Order order = orderService.findByOidWithItems(oid);
 
+        success(order);
 
-        success();
+    }
+
+    protected void myOrders(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // 通过session获取用户的信息
+        User user = (User) request.getSession().getAttribute("user");
+        //判断是否登录
+        if (user == null){
+            nologin();
+            return;
+        }
+
+        // 通过url获取当前页面的页数
+        String pn = request.getParameter("pageNumber");
+        System.out.println(pn);
+        int pageNumber = GlobalUtil.mustInt(pn, 1);
+        // 设置每页显示的条数
+        int pageSize = 2;
+        // 通过uid去查找订单信息
+        List<Order> orders = orderService.findOrderByUid(user.getUid(),pageNumber,pageSize);
+        // 设置分页功能
+        PageBean<Order> pageBean = new PageBean<>();
+        pageBean.setData(orders);
+
+        pageBean.setPageNumber(pageNumber);
+        pageBean.setPageSize(pageSize);
+
+        // 查询获得总页数并设置
+        int total = orderService.countByUid(user.getUid());
+        pageBean.setTotal(total);
+
+        // 返回页面信息
+
+        success(pageBean);
 
     }
 

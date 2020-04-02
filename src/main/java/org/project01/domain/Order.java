@@ -1,6 +1,9 @@
 package org.project01.domain;
 
+import org.project01.domain.vo.OrderItemVo;
+
 import java.util.Date;
+import java.util.List;
 
 public class Order {
     // 订单id
@@ -18,6 +21,16 @@ public class Order {
     // 收获人电话
     private String telephone;
     private String uid;
+    // 订单展示项
+    private List<OrderItemVo> vos;
+
+    public List<OrderItemVo> getVos() {
+        return vos;
+    }
+
+    public void setVos(List<OrderItemVo> vos) {
+        this.vos = vos;
+    }
 
     public String getOid() {
         return oid;
