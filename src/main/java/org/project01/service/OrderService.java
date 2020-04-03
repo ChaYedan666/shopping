@@ -16,4 +16,6 @@ public interface OrderService {
     int countByUid(String uid);
 
     void updateSHR(Order order);
+
+    void updateState(String oid, int orderStateYifukuan);
 }

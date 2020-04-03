@@ -3,6 +3,8 @@ package org.project01.web.servlet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.project01.auth.Auth;
+import org.project01.domain.User;
 import org.project01.utils.RRHolder;
 import org.project01.web.vo.ResultVo;
 
@@ -79,6 +81,14 @@ public abstract class BaseServlet extends HttpServlet {
 
     }
 
+    public void authFail() throws IOException {
+        ResultVo vo = new ResultVo(ResultVo.CODE_AUTH_FAIL, "");
+
+        String s = new ObjectMapper().writeValueAsString(vo);
+        RRHolder.getResponse().getWriter().print(s);
+        //response.getWriter().write(s);
+    }
+
 
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -97,6 +107,33 @@ public abstract class BaseServlet extends HttpServlet {
         //参数2  形参类型列表
         try {
             Method method = this.getClass().getDeclaredMethod(md, HttpServletRequest.class, HttpServletResponse.class);
+            // 方法执行之前验证是否登录
+            if (method.isAnnotationPresent(Auth.class)) {
+                User user = (User) request.getSession().getAttribute("user");
+                if (user == null){
+                    nologin();
+                    return;
+                }
+                //代码走到这 说明方法是需要登录 且已经登录了
+                //首先获取注解对象 然后获取它的值
+                Auth auth = method.getAnnotation(Auth.class);
+
+                String role = auth.value();
+
+                if (!role.equals(user.getRemark())){
+                    authFail();
+                    return;
+                }
+
+            }
+
+
+
+
+
+
+
+
 
             //执行方法
             method.invoke(this,request,response);

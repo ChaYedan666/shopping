@@ -73,4 +73,9 @@ public class OrderServiceImpl implements OrderService {
     public void updateSHR(Order order) {
         orderDao.updateSHR(order);
     }
+
+    @Override
+    public void updateState(String oid, int orderStateYifukuan) {
+        orderDao.updateState(oid,orderStateYifukuan);
+    }
 }

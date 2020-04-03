@@ -20,4 +20,6 @@ public interface OrderDao {
     List<Order> findOrderByUid(String uid, int pageNumber, int pageSize);
 
     void updateSHR(Order order);
+
+    void updateState(String oid, int orderStateYifukuan);
 }

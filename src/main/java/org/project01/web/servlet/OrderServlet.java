@@ -2,6 +2,7 @@ package org.project01.web.servlet;
 
 import com.alipay.api.AlipayApiException;
 import org.apache.commons.beanutils.BeanUtils;
+import org.project01.auth.Auth;
 import org.project01.constants.Global;
 import org.project01.domain.*;
 import org.project01.service.OrderService;
@@ -22,11 +23,46 @@ public class OrderServlet extends BaseServlet {
     // 工厂方法，将接口的方法反射到实现类
     private OrderService orderService = BeanFactory.newInstance(OrderService.class);
 
+
+
+    protected void xx(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.getWriter().write("我不需要登录");
+    }
+    @Auth("ROLE_ADMIN")
+    protected void yy(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        response.getWriter().write("我不需要登录");
+    }
+
+
+
     // 还有回调的方法（callback）没写，教程没有我服了
+    // 下面是复制的
+    @Auth
+    protected void callback(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        //接受请求
+        //先校验 过了
+        Map<String, String[]> parameterMap = request.getParameterMap();
+
+
+        boolean check = AlipayUtil.check(parameterMap);
+        if (check) {
+            //才会取出订单id 该改订单状态改变已支付
+            String oid = request.getParameter("out_trade_no");
+
+            orderService.updateState(oid, Global.ORDER_STATE_YIFUKUAN);
+
+            //response.getWriter().print("付款成功了!");
+            //重定向到订单页面
+            response.sendRedirect("http://www.project01.com:8020/project01/view/order/info.html?oid=" + oid);
+        } else {
+            //滚犊子
+            response.getWriter().print("滚犊子!!!");
+        }
+    }
 
 
     //这里留空等以后有机会补吧
-
+    @Auth
     protected void toPay(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // 获取oid,收货人姓名，地址，电话
         Map<String, String[]> parameterMap = request.getParameterMap();
@@ -49,14 +85,14 @@ public class OrderServlet extends BaseServlet {
 
 
     }
-
+    @Auth
     protected void generate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // 检查是否登录
         User user = (User) request.getSession().getAttribute("user");
-        if (user == null){
-            nologin();
-            return;
-        }
+//        if (user == null){
+//            nologin();
+//            return;
+//        }
 
         // 检查购物车是否为空
         Cart cart = getCart();
@@ -103,15 +139,15 @@ public class OrderServlet extends BaseServlet {
         success(order);
 
     }
-
+    @Auth
     protected void myOrders(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // 通过session获取用户的信息
         User user = (User) request.getSession().getAttribute("user");
-        //判断是否登录
-        if (user == null){
-            nologin();
-            return;
-        }
+//        //判断是否登录
+//        if (user == null){
+//            nologin();
+//            return;
+//        }
 
         // 通过url获取当前页面的页数
         String pn = request.getParameter("pageNumber");

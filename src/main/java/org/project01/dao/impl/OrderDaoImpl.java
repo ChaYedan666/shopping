@@ -117,4 +117,17 @@ public class OrderDaoImpl implements OrderDao {
         }
 
     }
+
+    @Override
+    public void updateState(String oid, int orderStateYifukuan) {
+        QueryRunner queryRunner = new QueryRunner(DataSourceUtil.getDataSource());
+
+        String sql = "UPDATE ORDERS SET STATE = ? WHERE OID = ?";
+
+        try {
+            queryRunner.update(sql,orderStateYifukuan,oid);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }
