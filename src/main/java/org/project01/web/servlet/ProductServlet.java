@@ -18,6 +18,32 @@ import java.util.Map;
 @WebServlet(urlPatterns = "/product")
 public class ProductServlet extends BaseServlet {
 
+    protected void findAll (HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // 后台的商品展示
+        String pageNumber = request.getParameter("pageNumber");
+
+        int pageSize = 6;
+
+        int i = Integer.parseInt(pageNumber);
+
+        List<Product> products = new ProductService().findAll(i,pageSize);
+        int count = new ProductService().count();
+
+        // 将需要的数据传给PageBean工具类
+        PageBean<Product> pb = new PageBean<>();
+        pb.setPageSize(pageSize);
+        pb.setPageNumber(i);
+        pb.setTotal(count);
+        pb.setData(products);
+
+        success(pb);
+
+    }
+
+
+
+
+
     protected void page (HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // 分类下的商品展示
         // 获取CID

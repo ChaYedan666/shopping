@@ -92,4 +92,51 @@ public class ProductDao {
     }
 
 
+    public List<Product> findAll(int pageNumber, int pageSize) {
+        QueryRunner queryRunner = new QueryRunner(DataSourceUtil.getDataSource());
+
+        String sql = "SELECT * FROM PRODUCT LIMIT ?,?";
+
+        try {
+            List<Product> query = queryRunner.query(sql, new BeanListHandler<Product>(Product.class), (pageNumber - 1) * pageSize, pageSize);
+            return query;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    public int count() {
+        QueryRunner queryRunner = new QueryRunner(DataSourceUtil.getDataSource());
+
+        String sql = "SELECT count(*) FROM product";
+
+        try {
+            return ((Long)(queryRunner.query(sql,new ScalarHandler()))).intValue();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+
+    }
+
+    public void save(Product product) {
+        Product p = product;
+        QueryRunner qr = new QueryRunner(DataSourceUtil.getDataSource());
+
+        //编写sql
+        String sql="insert into product values(?,?,?,?,?,?,?,?,?,?) ";
+
+        try {
+            qr.update(sql,
+                    p.getPid(),p.getPname(),p.getMarket_price(),
+                    p.getShop_price(),p.getPimage(),p.getPdate(),
+                    p.getIs_hot(),p.getPdesc(),p.getPflag(),p.getCid()
+
+            );
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

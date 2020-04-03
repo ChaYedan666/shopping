@@ -112,4 +112,21 @@ public class ProductService {
             }
         }
     }
+
+    public List<Product> findAll(int pageNumber, int pageSize) {
+        ProductDao productDao = new ProductDao();
+        return productDao.findAll(pageNumber,pageSize);
+
+    }
+
+    public int count() {
+        ProductDao productDao = new ProductDao();
+        return productDao.count();
+    }
+
+    public void save(Product product) {
+        ProductDao productDao = new ProductDao();
+
+        productDao.save(product);
+    }
 }
